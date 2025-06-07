@@ -5,7 +5,7 @@ const TokenAJson = require("../artifacts/contracts/TokenA.sol/MyTokenA.json");
 const TokenBJson = require("../artifacts/contracts/TokenB.sol/MyTokenB.json");
 const FactoryJson = require("../artifacts/contracts/UniswapV2Factory.sol/UniswapV2Factory.json");
 //interact main functions
-//create
+//create connection 
 // ✅ Set these environment variables in a `.env` file
 const ALCHEMY_KEY = process.env.ALCHEMY_API_KEY;
 const PRIVATE_KEY = process.env.SEPOLIA_PRIVATE_KEY;
