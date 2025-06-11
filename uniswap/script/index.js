@@ -1,10 +1,12 @@
 require("dotenv").config();
+const { splitSignature } = require("@ethersproject/bytes");
+const { network, version } = require("hardhat");
 const { ethers } = require("ethers");
 const routerAbi = require("../artifacts/contracts/UniswapV2Router02.sol/UniswapV2Router02.json");
 const TokenAJson = require("../artifacts/contracts/TokenA.sol/MyTokenA.json");
 const TokenBJson = require("../artifacts/contracts/TokenB.sol/MyTokenB.json");
 const FactoryJson = require("../artifacts/contracts/UniswapV2Factory.sol/UniswapV2Factory.json");
-//interact main functions
+const wethJson = require("../artifacts/contracts/WETH.sol/WETH.json");
 // ✅ Set these environment variables in a `.env` file
 const ALCHEMY_KEY = process.env.ALCHEMY_API_KEY;
 const PRIVATE_KEY = process.env.SEPOLIA_PRIVATE_KEY;
@@ -15,6 +17,7 @@ const provider = new ethers.JsonRpcProvider(
 const signer = new ethers.Wallet(PRIVATE_KEY, provider);
 
 const WETHContAddress = "0x1Be4730A3ceC60114305dA48576F0F23c0bAE2AB";
+const weth = new ethers.Contract(WETHContAddress, wethJson.abi, signer);
 
 // TokenA and TokenB contract addresses
 // ✅ Use the TokenA ABI from the contract JSON
@@ -33,14 +36,14 @@ const factory = new ethers.Contract(factoryAddress, FactoryJson.abi, signer);
 
 /////////////
 //Add liquidity
-const amountADesired = ethers.parseUnits("200", 18); // 100 tokens
-const amountBDesired = ethers.parseUnits("600", 18); // 200 tokens
-const amountAMin = ethers.parseUnits("180", 18); // minimum acceptable
-const amountBMin = ethers.parseUnits("580", 18);
+// const amountADesired = ethers.parseUnits("300", 18); // 100 tokens
+// const amountBDesired = ethers.parseUnits("1000", 18); // 200 tokens
+// const amountAMin = ethers.parseUnits("180", 18);      // minimum acceptable
+// const amountBMin = ethers.parseUnits("580", 18);
 // const to = "0x13A538AEa48B39b17915eCb001f5330131c36a1A";
 // const deadline = Math.floor(Date.now() / 1000) + 60 * 20; // 10 min from now
 
-///add liquidity
+// ///add liquidity
 // async function main() {
 //       try {
 //               // Check balances first
@@ -279,6 +282,10 @@ const lpTokenAbi = [
   "function approve(address spender, uint256 amount) external returns (bool)",
   "function balanceOf(address account) external view returns (uint256)",
   "function allowance(address owner, address spender) external view returns (uint256)",
+  "function name() view returns (string)",
+  "  function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external",
+  "function nonces(address owner) external view returns (uint)",
+  "function DOMAIN_SEPARATOR() external view returns (bytes32)",
 ];
 const lpCAforETHpair = "0x9031fe229252C5Dd657C9D2e72b67b67Eb17d621";
 const lpCAforERC20Pairs = "0x7663fC613b60876E047C6C6c17614c0f0Fa81672"; // From transaction logs (pair)
@@ -289,30 +296,269 @@ const lpTokenETH = new ethers.Contract(lpCAforETHpair, lpTokenAbi, signer);
 
 //remove liquidity of erc20 pairs
 
-async function removeLiquidity() {
-  try {
-    // Step 1: Approve Router to spend LP tokens
+// async function removeLiquidity(){
 
-    const liquidity = ethers.parseUnits("8", 18); // Amount of LP tokens to burn
-    await lpTokenERC20.approve(router, liquidity);
-    const amountAMin = ethers.parseUnits("2", 18); // Minimum amount of tokenA
-    const amountBMin = ethers.parseUnits("6", 18); // Minimum amount of tokenB
-    const to = "0x13A538AEa48B39b17915eCb001f5330131c36a1A";
-    const deadline = Math.floor(Date.now() / 1000) + 60 * 10; // 10 minutes from now
-    // Step 2: Call removeLiquidity
-    const tx = await router.removeLiquidity(
-      TokenA,
-      TokenB,
-      liquidity,
-      amountAMin,
-      amountBMin,
-      to,
-      deadline
-    );
-    await tx.wait();
-    console.log("Liquidity removed:", tx.hash);
-  } catch (error) {
-    console.error("Error:", error);
-  }
-}
-removeLiquidity();
+//       try {
+//            // Step 1: Approve Router to spend LP tokens
+
+//            const amountAMin = ethers.parseUnits("2", 18); // Minimum amount of tokenA
+//            const amountBMin = ethers.parseUnits("6", 18); // Minimum amount of tokenB
+//            const liquidity = ethers.parseUnits("8", 18); // Amount of LP tokens to burn
+//            await lpTokenERC20.approve(router, liquidity);
+//             const to = "0x13A538AEa48B39b17915eCb001f5330131c36a1A";
+//             const deadline = Math.floor(Date.now() / 1000) + 60 * 10; // 10 minutes from now
+//             // Step 2: Call removeLiquidity
+//             const tx = await router.removeLiquidity(
+//             TokenA,
+//             TokenB,
+//             liquidity,
+//             amountAMin,
+//             amountBMin,
+//             to,
+//             deadline
+//             );
+//             await tx.wait();
+//             console.log("Liquidity removed:", tx.hash);
+//                   } catch (error) {
+//                   console.error("Error:", error);
+//                   }
+// }
+// removeLiquidity()
+//////////////////////////////
+//removeLiquidityWithPermit (having error)
+// async function removeLiquidityWithPermit(){
+//   try {
+//     const amountAMin = ethers.parseUnits("2", 18); // Minimum amount of tokenA
+//     const amountBMin = ethers.parseUnits("2", 18); // Minimum amount of tokenB
+//     const value = ethers.parseUnits("8", 18); // Amount of LP tokens to burn
+//     await lpTokenERC20.approve(router, value);
+//     const to = "0x13A538AEa48B39b17915eCb001f5330131c36a1A";
+//     const deadline = Math.floor(Date.now() / 1000) + 60 * 10; // 10 minutes from now
+
+//    const chainId = (await provider.getNetwork()).chainId;
+//    const owner = await signer.getAddress(); // Must be signer
+//    const nonce = await lpTokenERC20.nonces(owner);
+//    const name = await lpTokenERC20.name(); // should be "Uniswap V2"
+// console.log("chainId :",chainId)
+// const domain = {
+//   name: name,
+//   version:"1",
+//   chainId: chainId,//11155111
+//   verifyingContract: lpCAforERC20Pairs,
+// };
+// console.log("token addres::",lpCAforERC20Pairs)
+// const contractSeparator = await lpTokenERC20.DOMAIN_SEPARATOR();
+// console.log("Computed:", ethers.TypedDataEncoder.hashDomain(domain));
+// console.log("On-chain:", contractSeparator);
+
+// console.log("Name",name)
+// console.log("owner",owner)
+// const message = {
+//   owner: owner,
+//   spender: router.target,
+//   value:  value,
+//   nonce:nonce,
+//   deadline:deadline,
+// };
+// const types = {
+//   Permit: [
+//     { name: "owner", type: "address" },
+//     { name: "spender", type: "address" },
+//     { name: "value", type: "uint256" },
+//     { name: "nonce", type: "uint256" },
+//     { name: "deadline", type: "uint256" },
+//   ]
+// };
+
+// console.log("Router address used in permit:", routerContAddress);
+// console.log("Router contract instance address:", router.target);
+// console.log("DOMAIN_SEPARATOR:", await lpTokenERC20.DOMAIN_SEPARATOR());
+// console.log("Nonce for owner:", await lpTokenERC20.nonces(owner));
+
+// ///check balance
+// console.log("LP Token Balance:", (await lpTokenERC20.balanceOf(owner)).toString());
+// console.log("TokenA Balance:", (await contractA.balanceOf(owner)).toString());
+// console.log("TokenB Balance:", (await contractB.balanceOf(owner)).toString());
+// ///////
+// // Verify pool reserves
+// const pair = new ethers.Contract(lpCAforERC20Pairs, [
+//   "function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast)"
+// ], signer);
+// const [reserve0, reserve1] = await pair.getReserves();
+// console.log("Pool Reserves:", reserve0.toString(), reserve1.toString());
+// //
+// const signature = await signer.signTypedData(domain, types, message);
+// console.log("signature ",signature)
+// const { v, r, s } = splitSignature(signature);
+
+// // Log
+// console.log("v:", v);
+// console.log("r:", r);
+// console.log("s:", s);
+// // Call `removeLiquidityWithPermit`
+// const tx = await router.removeLiquidityWithPermit(
+//   TokenA,
+//   TokenB,
+//   value,
+//   amountAMin,
+//   amountBMin,
+//   to,
+//   deadline,
+//   false,
+//   v, r, s,
+//  { gasLimit: 500000 }
+// );
+// console.log("🧾 Tx Hash:", tx.hash);
+// await tx.wait();
+// console.log("✅ Liquidity removed");
+
+//   } catch (error) {
+//        console.error("Error:", error);
+
+//   }
+// }
+// removeLiquidityWithPermit()
+
+//////////////////////////////////////
+//removeLiquidityETH
+
+// async function removeLiquidityETH(){
+//         try {
+//            // Step 1: Approve Router to spend LP tokens
+//             const liquidity = ethers.parseUnits("1", 18); // 1 LP token
+//           const amountAMin = ethers.parseUnits("0.0001", 18); // Safer minimum
+//           const amountEthMin = ethers.parseUnits("0.0001", 18); // Safer minimum
+//            await lpTokenETH.approve(router, liquidity);
+//             const to = "0x13A538AEa48B39b17915eCb001f5330131c36a1A";
+//             const deadline = Math.floor(Date.now() / 1000) + 60 * 10; // 10 minutes from now
+
+//             const userLpBalance = await lpTokenETH.balanceOf(to);
+//           console.log("User LP Balance:", userLpBalance.toString());
+
+//           if (userLpBalance < liquidity) {
+//             throw new Error("Insufficient LP tokens");
+//           }
+
+//             // Step 2: Call removeLiquidity
+//             const tx = await router.removeLiquidityETH(
+//             TokenA,
+//             liquidity,
+//             amountAMin,
+//             amountEthMin,
+//             to,
+//             deadline
+//             );
+//             await tx.wait();
+//             console.log("Liquidity removed with eth:", tx.hash);
+//                   } catch (error) {
+//                   console.error("Error:", error);
+//                   }
+
+// }
+// removeLiquidityETH()
+//////////////////////////////////////
+
+// removeLiquidityETHWithPermit
+
+// async function removeLiquidityETHWithPermit() {
+
+//           try {
+//            // Step 1: Approve Router to spend LP tokens
+//             const value = ethers.parseUnits("0.5", 18); // 1 LP token
+//           const amountAMin = ethers.parseUnits("0.0001", 18); // Safer minimum
+//           const amountEthMin = ethers.parseUnits("0.0001", 18); // Safer minimum
+//            await lpTokenETH.approve(router, value);
+//             const to = "0x13A538AEa48B39b17915eCb001f5330131c36a1A";
+//             const deadline = Math.floor(Date.now() / 1000) + 60 * 10; // 10 minutes from now
+
+//             const userLpBalance = await lpTokenETH.balanceOf(to);
+//           console.log("User LP Balance:", userLpBalance.toString());
+
+//           if (userLpBalance < value) {
+//             throw new Error("Insufficient LP tokens");
+//           }
+
+//           ///////////
+//     const chainId = (await provider.getNetwork()).chainId;
+//    const owner = await signer.getAddress(); // Must be signer
+//    const nonce = await lpTokenETH.nonces(owner);
+//    const name = await lpTokenETH.name(); // should be "Uniswap V2"
+// console.log("chainId :",chainId)
+// const domain = {
+//   name: name,
+//   version:"1",
+//   chainId: chainId,//11155111
+//   verifyingContract: lpCAforETHpair,
+// };
+// console.log("token addres::",lpCAforETHpair)
+// const contractSeparator = await lpTokenETH.DOMAIN_SEPARATOR();
+// console.log("Computed:", ethers.TypedDataEncoder.hashDomain(domain));
+// console.log("On-chain:", contractSeparator);
+
+// console.log("Name",name)
+// console.log("owner",owner)
+// const message = {
+//   owner: owner,
+//   spender: router.target,
+//   value:  value,
+//   nonce:nonce,
+//   deadline:deadline,
+// };
+// const types = {
+//   Permit: [
+//     { name: "owner", type: "address" },
+//     { name: "spender", type: "address" },
+//     { name: "value", type: "uint256" },
+//     { name: "nonce", type: "uint256" },
+//     { name: "deadline", type: "uint256" },
+//   ]
+// };
+
+// console.log("Router address used in permit:", routerContAddress);
+// console.log("Router contract instance address:", router.target);
+// console.log("DOMAIN_SEPARATOR:", await lpTokenETH.DOMAIN_SEPARATOR());
+// console.log("Nonce for owner:", await lpTokenETH.nonces(owner));
+
+// ///check balance
+// console.log("LP Token Balance:", (await lpTokenETH.balanceOf(owner)).toString());
+// console.log("TokenA Balance:", (await contractA.balanceOf(owner)).toString());
+// console.log("WETH Balance:", (await weth.balanceOf(owner)).toString());
+// ///////
+// // Verify pool reserves ,create instance of pair
+// const pair = new ethers.Contract(lpCAforETHpair, [
+//   "function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast)"
+// ], signer);
+// const [reserve0, reserve1] = await pair.getReserves();
+// console.log("Pool Reserves:", reserve0.toString(), reserve1.toString());
+// ///////////////
+// const signature = await signer.signTypedData(domain, types, message);
+// console.log("signature ",signature)
+// const { v, r, s } = splitSignature(signature);
+// // //remove permit offchain because onchain internall called
+// // //const permit =await lpTokenETH.permit(owner, router.target, value, deadline, v, r, s)
+// // // console.log("permit :",permit)
+// // Log
+// console.log("v:", v);
+// console.log("r:", r);
+// console.log("s:", s);
+
+//             // Step 2: Call removeLiquidity
+//             const tx = await router.removeLiquidityETHWithPermit(
+//             TokenA,
+//             value,
+//             amountAMin,
+//             amountEthMin,
+//             to,
+//             deadline,
+//             false,
+//             v, r, s
+//             );
+//             await tx.wait();
+//             console.log("Liquidity removed with eth:", tx.hash);
+//                   } catch (error) {
+//                   console.error("Error:", error);
+//                   }
+
+// }
+// removeLiquidityETHWithPermit()
+////////////////////////////
