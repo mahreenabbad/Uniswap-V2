@@ -1,4 +1,4 @@
-
+//script
 require("dotenv").config();
 const { splitSignature } = require("@ethersproject/bytes");
 const { network, version } = require("hardhat");
