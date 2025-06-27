@@ -12,6 +12,7 @@ const PRIVATE_KEY = process.env.SEPOLIA_PRIVATE_KEY;
 const provider = new ethers.JsonRpcProvider(`https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_KEY}`);
 const signer = new ethers.Wallet(PRIVATE_KEY, provider);
 
+//contracts instance
 // ✅ Use the TokenA ABI from the contract JSON
 const contractTA = "0x78cefc72DDB436a254F3b540f4D0663f84bF651d";
 const contractA = new ethers.Contract(contractTA, TokenAJson.abi, signer);
