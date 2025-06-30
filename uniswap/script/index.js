@@ -1,3 +1,4 @@
+//script to interact functions 
 require("dotenv").config();
 const { splitSignature } = require("@ethersproject/bytes");
 const { network, version } = require("hardhat");
@@ -23,13 +24,13 @@ const signer = new ethers.Wallet(PRIVATE_KEY, provider);
 
 const WETHContAddress = "0x1Be4730A3ceC60114305dA48576F0F23c0bAE2AB";
 const weth = new ethers.Contract(WETHContAddress, wethJson.abi, signer);
-
+//addresses 
 // TokenA and TokenB contract addresses
 // ✅ Use the TokenA ABI from the contract JSON
 const TokenA = "0x78cefc72DDB436a254F3b540f4D0663f84bF651d";
 const contractA = new ethers.Contract(TokenA, TokenAJson.abi, signer);
 
-// ✅ Use the TokenA ABI from the contract JSON
+// ✅ Use the TokenA ABI from the contract A JSON
 const TokenB = "0xaB90f7dF2EA8e6015d5204737F5187f135682a6C";
 const contractB = new ethers.Contract(TokenB, TokenBJson.abi, signer);
 // ✅ Use the ABI from the contract JSON
