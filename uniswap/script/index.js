@@ -1,4 +1,4 @@
-//script to interact functions 
+//script to interact functions
 require("dotenv").config();
 const { splitSignature } = require("@ethersproject/bytes");
 const { network, version } = require("hardhat");
@@ -7,12 +7,9 @@ const routerAbi = require("../artifacts/contracts/UniswapV2Router02.sol/UniswapV
 const TokenAJson = require("../artifacts/contracts/TokenA.sol/MyTokenA.json");
 const TokenBJson = require("../artifacts/contracts/TokenB.sol/MyTokenB.json");
 const FactoryJson = require("../artifacts/contracts/UniswapV2Factory.sol/UniswapV2Factory.json");
-<<<<<<< HEAD
+
 const wethJson = require("../artifacts/contracts/WETH.sol/WETH.json");
-=======
-//interact main functions
-//create connection 
->>>>>>> 97eae4113593890597bf72f8a7340af965c52b34
+
 // ✅ Set these environment variables in a `.env` file
 const ALCHEMY_KEY = process.env.ALCHEMY_API_KEY;
 const PRIVATE_KEY = process.env.SEPOLIA_PRIVATE_KEY;
@@ -24,7 +21,7 @@ const signer = new ethers.Wallet(PRIVATE_KEY, provider);
 
 const WETHContAddress = "0x1Be4730A3ceC60114305dA48576F0F23c0bAE2AB";
 const weth = new ethers.Contract(WETHContAddress, wethJson.abi, signer);
-//addresses 
+//addresses
 // TokenA and TokenB contract addresses
 // ✅ Use the TokenA ABI from the contract JSON
 const TokenA = "0x78cefc72DDB436a254F3b540f4D0663f84bF651d";
