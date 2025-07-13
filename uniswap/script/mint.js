@@ -1,4 +1,4 @@
-//impors
+//imports
 require('dotenv').config();
 const { ethers } = require('ethers');
 const TokenAJson = require('../artifacts/contracts/TokenA.sol/MyTokenA.json');
@@ -9,7 +9,7 @@ const WETHJson = require('../artifacts/contracts/WETH.sol/WETH.json')
 // ✅ Set these environment variables in a `.env` file
 const ALCHEMY_KEY = process.env.ALCHEMY_API_KEY;
 const PRIVATE_KEY = process.env.SEPOLIA_PRIVATE_KEY;
-
+//provider-signer
 const provider = new ethers.JsonRpcProvider(`https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_KEY}`);
 const signer = new ethers.Wallet(PRIVATE_KEY, provider);
 
