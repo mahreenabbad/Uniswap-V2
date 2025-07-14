@@ -1,4 +1,4 @@
-//imports
+//imports artifacts 
 require('dotenv').config();
 const { ethers } = require('ethers');
 const TokenAJson = require('../artifacts/contracts/TokenA.sol/MyTokenA.json');
