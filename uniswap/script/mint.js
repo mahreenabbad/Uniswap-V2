@@ -21,7 +21,7 @@ const contractA = new ethers.Contract(contractTA, TokenAJson.abi, signer);
 // ✅ Use the TokenA ABI from the contract JSON
 const contractTB = "0xaB90f7dF2EA8e6015d5204737F5187f135682a6C";
 const contractB = new ethers.Contract(contractTB, TokenBJson.abi, signer);
-//instance
+//instances
 // ✅ Use the ABI from the contract JSON
 const routerContAddress = "0xa20d8Cba1c7C387F5cEed869F1dC5814dBe2dCd4";
 const amountToApprove = ethers.parseUnits("1000", 18); // 100 tokens//ethers.constants.MaxUint256
