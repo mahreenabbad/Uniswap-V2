@@ -13,7 +13,7 @@ const wethJson = require("../artifacts/contracts/WETH.sol/WETH.json");
 // ✅ Set these environment variables in a `.env` file
 const ALCHEMY_KEY = process.env.ALCHEMY_API_KEY;
 const PRIVATE_KEY = process.env.SEPOLIA_PRIVATE_KEY;
-
+//provider
 const provider = new ethers.JsonRpcProvider(
   `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_KEY}`
 );
