@@ -4,8 +4,7 @@ const { keccak256 } = require("ethers");
 const pairArtifact = require("./artifacts/contracts/UniswapV2Factory.sol/UniswapV2Pair.json");
 
 async function main() {
-  // Load the correct artifact for UniswapV2Pair
-
+  // Load the correct artifact
   const bytecode = pairArtifact.bytecode;
   const hash = keccak256(bytecode);
 
