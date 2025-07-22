@@ -1,6 +1,6 @@
 const { keccak256 } = require("ethers");
 // const fs = require("fs");
-//get hex for UniswapV2Library PairFor() function
+//get hex UniswapV2Library PairFor() function
 const pairArtifact = require("./artifacts/contracts/UniswapV2Factory.sol/UniswapV2Pair.json");
 
 async function main() {
