@@ -33,7 +33,7 @@ const WETH = new ethers.Contract(WETHContAddress, WETHJson.abi, signer);
 const recipient = "0x13A538AEa48B39b17915eCb001f5330131c36a1A";
 
 async function main() {
-   const amount = ethers.parseUnits("1000", 18); // 1000 tokens, 18 decimals
+   //const amount = ethers.parseUnits("1000", 18); // 1000 tokens, 18 decimals
 
    console.log(`Sending TokenA mint transaction...`);
   // const tx = await contractA.mint(recipient, amount);
