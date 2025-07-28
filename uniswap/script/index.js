@@ -194,7 +194,7 @@ const factory = new ethers.Contract(factoryAddress, FactoryJson.abi, signer);
 ///////////////////////////
 //
 //addLiquidityETH()
-// async function addLiquidityETH(){
+async function addLiquidityETH(){
 //       try {
 //             const amountTokenDesired = ethers.parseUnits("100", 18);
 //             const amountTokenMin = ethers.parseUnits("90", 18);
